@@ -15,23 +15,22 @@ URLS = []  # a list to hold the URLs to check if there is a duplicate
 
 
 def waitForThirty():  # this function will be used to make a 30 seconds interval
-    time.sleep(2)
+    time.sleep(5)
 
 
 def getLink(url):
     response = requests.get(url)
-    print("response", response)
+    print("response = ", response.url)
+    URLS.append(response.url)
     html = response.text
-    print("html", html)
     soup = BeautifulSoup(html, "html.parser")
+    # the next line get the first a (link) in the first p (paragraph) in the web page
+    link = soup.p.a
 
-    # print(soup)
-
-    link = soup.find('p')
-    print(link)
-    article_link = link.find("a", attrs={'href': re.compile("^/wiki/")})
+    print("link = ", link)
+    article_link = link.attrs['href']
     print(article_link)
-    return article_link
+    return "https://en.wikipedia.org" + article_link
 
 
 def find_philosophy(url):
@@ -39,9 +38,8 @@ def find_philosophy(url):
     count = 0
 
     link = getLink(url)
-    print(link)
 
-    while '/wiki/Philosophy' not in link:
+    while 'https://en.wikipedia.org/wiki/Philosophy' != link:
         if count == MAX_HOPS:
             print("MAX_HOPS reached.")
             return None
@@ -50,8 +48,9 @@ def find_philosophy(url):
         count = count + 1
 
         waitForThirty()
-        if isDuplicate(link, URLS):
-            print("we are in a loop")
+        # if isDuplicate(link, URLS):
+        #     print("we are in a loop")
+        #     break
 
     print(str(count) + " hops")
     return count
